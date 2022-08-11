@@ -8,10 +8,12 @@ import { ASC, DESC, SORT, ITEM_DELETED_EVENT, DEFAULT_SORT_DATA } from 'app/conf
 import { EntityArrayResponseType, BookService } from '../service/book.service';
 import { BookDeleteDialogComponent } from '../delete/book-delete-dialog.component';
 import { SortService } from 'app/shared/sort/sort.service';
+import { FormBuilder } from '@angular/forms';
 
 @Component({
   selector: 'jhi-book',
   templateUrl: './book.component.html',
+  styleUrls: ['./book.component.css'],
 })
 export class BookComponent implements OnInit {
   books?: IBook[];
@@ -20,18 +22,39 @@ export class BookComponent implements OnInit {
   predicate = 'id';
   ascending = true;
 
+  searchForm = this.formBuilder.group({
+    title: '',
+    description: '',
+    price: '',
+    author: '',
+  });
+
   constructor(
     protected bookService: BookService,
     protected activatedRoute: ActivatedRoute,
     public router: Router,
     protected sortService: SortService,
-    protected modalService: NgbModal
+    protected modalService: NgbModal,
+    private formBuilder: FormBuilder
   ) {}
 
   trackId = (_index: number, item: IBook): number => this.bookService.getBookIdentifier(item);
 
   ngOnInit(): void {
     this.load();
+  }
+
+  search(value: any) {
+    const queryParamsObj = {
+      'title.contains': value.title,
+      'description.contains': value.description,
+      'price.lessThanOrEqual': value.price,
+    };
+    this.bookService.query(queryParamsObj).subscribe({
+      next: (res: EntityArrayResponseType) => {
+        this.onResponseSuccess(res);
+      },
+    });
   }
 
   delete(book: IBook): void {
@@ -90,6 +113,7 @@ export class BookComponent implements OnInit {
 
   protected queryBackend(predicate?: string, ascending?: boolean): Observable<EntityArrayResponseType> {
     this.isLoading = true;
+
     const queryObject = {
       sort: this.getSortQueryParam(predicate, ascending),
     };
@@ -100,6 +124,8 @@ export class BookComponent implements OnInit {
     const queryParamsObj = {
       sort: this.getSortQueryParam(predicate, ascending),
     };
+
+    console.log('queryParamsObj', queryParamsObj);
 
     this.router.navigate(['./'], {
       relativeTo: this.activatedRoute,

@@ -7,6 +7,7 @@ import { BookDetailComponent } from '../detail/book-detail.component';
 import { BookUpdateComponent } from '../update/book-update.component';
 import { BookRoutingResolveService } from './book-routing-resolve.service';
 import { ASC } from 'app/config/navigation.constants';
+import { Authority } from '../../../config/authority.constants';
 
 const bookRoute: Routes = [
   {
@@ -30,6 +31,7 @@ const bookRoute: Routes = [
     component: BookUpdateComponent,
     resolve: {
       book: BookRoutingResolveService,
+      authorities: [Authority.ADMIN],
     },
     canActivate: [UserRouteAccessService],
   },
@@ -38,6 +40,7 @@ const bookRoute: Routes = [
     component: BookUpdateComponent,
     resolve: {
       book: BookRoutingResolveService,
+      authorities: [Authority.ADMIN],
     },
     canActivate: [UserRouteAccessService],
   },

@@ -5,14 +5,14 @@ import { RouterModule } from '@angular/router';
   imports: [
     RouterModule.forChild([
       {
-        path: 'author',
-        data: { pageTitle: 'myapplicationApp.author.home.title' },
-        loadChildren: () => import('./author/author.module').then(m => m.AuthorModule),
-      },
-      {
         path: 'book',
         data: { pageTitle: 'myapplicationApp.book.home.title' },
         loadChildren: () => import('./book/book.module').then(m => m.BookModule),
+      },
+      {
+        path: 'author',
+        data: { pageTitle: 'myapplicationApp.author.home.title' },
+        loadChildren: () => import('./author/author.module').then(m => m.AuthorModule),
       },
       {
         path: 'product',

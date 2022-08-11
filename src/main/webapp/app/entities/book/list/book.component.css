@@ -1,0 +1,9 @@
+.search-form .input-fields {
+  margin: 20px;
+}
+
+.search-form div {
+  height: 50px;
+  align-items: baseline;
+  margin-bottom: 20px;
+}

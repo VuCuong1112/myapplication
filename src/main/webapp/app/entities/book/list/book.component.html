@@ -24,6 +24,21 @@
 
   <jhi-alert></jhi-alert>
 
+  <form #searchForm="ngForm" (ngSubmit)="search(searchForm.value)" class="search-form">
+    <div class="d-flex justify-content-start">
+      <div class="input-fields">
+        <input name="title" ngModel placeholder="title" id="title" type="text" class="input-field" />
+      </div>
+      <div class="input-fields">
+        <input name="description" ngModel placeholder="description" id="description" type="text" class="input-field" />
+      </div>
+      <div class="input-fields">
+        <input name="price" ngModel placeholder="price" id="price" type="number" class="input-field" />
+      </div>
+      <button>Search</button>
+    </div>
+  </form>
+
   <div class="alert alert-warning" id="no-result" *ngIf="books?.length === 0">
     <span jhiTranslate="myapplicationApp.book.home.notFound">No Books found</span>
   </div>

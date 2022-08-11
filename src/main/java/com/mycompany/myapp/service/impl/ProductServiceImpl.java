@@ -5,7 +5,7 @@ import com.mycompany.myapp.repository.ProductRepository;
 import com.mycompany.myapp.service.ProductService;
 import com.mycompany.myapp.service.dto.ProductDTO;
 import com.mycompany.myapp.service.mapper.ProductMapper;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,8 +67,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<ProductDTO> findAll() {
         log.debug("Request to get all Products");
-        return productRepository.findAll().stream().map(productMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
-        //        return productRepository.findById(2L).stream().map(productMapper::toDto).collect(Collectors.toCollection(ArrayList::new));
+        return productRepository.findAll().stream().map(productMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override

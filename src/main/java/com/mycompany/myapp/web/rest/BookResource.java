@@ -2,6 +2,9 @@ package com.mycompany.myapp.web.rest;
 
 import com.mycompany.myapp.domain.Book;
 import com.mycompany.myapp.repository.BookRepository;
+import com.mycompany.myapp.service.BookQueryService;
+import com.mycompany.myapp.service.BookService;
+import com.mycompany.myapp.service.criteria.BookCriteria;
 import com.mycompany.myapp.web.rest.errors.BadRequestAlertException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -12,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -22,7 +24,6 @@ import tech.jhipster.web.util.ResponseUtil;
  */
 @RestController
 @RequestMapping("/api")
-@Transactional
 public class BookResource {
 
     private final Logger log = LoggerFactory.getLogger(BookResource.class);
@@ -32,10 +33,16 @@ public class BookResource {
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
+    private final BookService bookService;
+
     private final BookRepository bookRepository;
 
-    public BookResource(BookRepository bookRepository) {
+    private final BookQueryService bookQueryService;
+
+    public BookResource(BookService bookService, BookRepository bookRepository, BookQueryService bookQueryService) {
+        this.bookService = bookService;
         this.bookRepository = bookRepository;
+        this.bookQueryService = bookQueryService;
     }
 
     /**
@@ -51,7 +58,7 @@ public class BookResource {
         if (book.getId() != null) {
             throw new BadRequestAlertException("A new book cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Book result = bookRepository.save(book);
+        Book result = bookService.save(book);
         return ResponseEntity
             .created(new URI("/api/books/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
@@ -83,7 +90,7 @@ public class BookResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Book result = bookRepository.save(book);
+        Book result = bookService.update(book);
         return ResponseEntity
             .ok()
             .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, book.getId().toString()))
@@ -116,25 +123,7 @@ public class BookResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<Book> result = bookRepository
-            .findById(book.getId())
-            .map(existingBook -> {
-                if (book.getTitle() != null) {
-                    existingBook.setTitle(book.getTitle());
-                }
-                if (book.getDescription() != null) {
-                    existingBook.setDescription(book.getDescription());
-                }
-                if (book.getPublicationDate() != null) {
-                    existingBook.setPublicationDate(book.getPublicationDate());
-                }
-                if (book.getPrice() != null) {
-                    existingBook.setPrice(book.getPrice());
-                }
-
-                return existingBook;
-            })
-            .map(bookRepository::save);
+        Optional<Book> result = bookService.partialUpdate(book);
 
         return ResponseUtil.wrapOrNotFound(
             result,
@@ -145,12 +134,26 @@ public class BookResource {
     /**
      * {@code GET  /books} : get all the books.
      *
+     * @param criteria the criteria which the requested entities should match.
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of books in body.
      */
     @GetMapping("/books")
-    public List<Book> getAllBooks() {
-        log.debug("REST request to get all Books");
-        return bookRepository.findAll();
+    public ResponseEntity<List<Book>> getAllBooks(BookCriteria criteria) {
+        log.debug("REST request to get Books by criteria: {}", criteria.toString().replaceAll("[\n\r\t]", "_"));
+        List<Book> entityList = bookQueryService.findByCriteria(criteria);
+        return ResponseEntity.ok().body(entityList);
+    }
+
+    /**
+     * {@code GET  /books/count} : count all the books.
+     *
+     * @param criteria the criteria which the requested entities should match.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the count in body.
+     */
+    @GetMapping("/books/count")
+    public ResponseEntity<Long> countBooks(BookCriteria criteria) {
+        log.debug("REST request to count Books by criteria: {}", criteria.toString().replaceAll("[\n\r\t]", "_"));
+        return ResponseEntity.ok().body(bookQueryService.countByCriteria(criteria));
     }
 
     /**
@@ -162,7 +165,7 @@ public class BookResource {
     @GetMapping("/books/{id}")
     public ResponseEntity<Book> getBook(@PathVariable Long id) {
         log.debug("REST request to get Book : {}", id);
-        Optional<Book> book = bookRepository.findById(id);
+        Optional<Book> book = bookService.findOne(id);
         return ResponseUtil.wrapOrNotFound(book);
     }
 
@@ -175,7 +178,7 @@ public class BookResource {
     @DeleteMapping("/books/{id}")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         log.debug("REST request to delete Book : {}", id);
-        bookRepository.deleteById(id);
+        bookService.delete(id);
         return ResponseEntity
             .noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))

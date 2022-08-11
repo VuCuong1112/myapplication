@@ -19,6 +19,7 @@
       "fieldType": "BigDecimal"
     }
   ],
+  "jpaMetamodelFiltering": true,
   "name": "Book",
   "pagination": "no",
   "readOnly": false,
@@ -30,5 +31,5 @@
       "relationshipType": "many-to-one"
     }
   ],
-  "service": "no"
+  "service": "serviceImpl"
 }
